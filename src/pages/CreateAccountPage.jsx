@@ -194,7 +194,7 @@ export default function CreateAccountPage() {
           value={form.fullName}
           onChange={handleChange}
           onBlur={handleBlur}
-          placeholder="Bijv. Yassine Alami"
+          placeholder="Bijv. Noah Bakker"
           autoComplete="name"
           error={touched.fullName ? errors.fullName : ""}
         />
