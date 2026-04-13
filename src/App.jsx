@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
-import { supabase } from "./lib/supabaseClient.js";
+import { supabase, hasSupabaseCredentials } from "./lib/supabaseClient.js";
 import AppNavbar from "./components/AppNavbar.jsx";
 import HomePage from "./pages/HomePage.jsx";
 import LoginPage from "./pages/LoginPage.jsx";
@@ -13,6 +13,13 @@ export default function App() {
 
   useEffect(() => {
     let isMounted = true;
+
+    if (!hasSupabaseCredentials || !supabase) {
+      setLoadingSession(false);
+      return () => {
+        isMounted = false;
+      };
+    }
 
     const getInitialSession = async () => {
       const {
@@ -41,6 +48,7 @@ export default function App() {
   }, []);
 
   const handleLogout = async () => {
+    if (!supabase) return;
     await supabase.auth.signOut();
   };
 
@@ -65,6 +73,23 @@ export default function App() {
         onLogout={handleLogout}
       />
 
+      {!hasSupabaseCredentials && (
+        <div
+          style={{
+            margin: "1rem auto",
+            maxWidth: "960px",
+            padding: "1rem 1.25rem",
+            borderRadius: "16px",
+            background: "#fff3cd",
+            color: "#664d03",
+            border: "1px solid #ffecb5",
+          }}
+        >
+          Demo-modus: inloggen en accountfuncties zijn uitgeschakeld omdat
+          Supabase-omgevingsvariabelen niet zijn ingesteld op deze live versie.
+        </div>
+      )}
+
       <Routes>
         <Route
           path="/"
@@ -74,17 +99,29 @@ export default function App() {
         <Route
           path="/login"
           element={
-            isAuthenticated ? <Navigate to="/my-account" replace /> : <LoginPage />
+            hasSupabaseCredentials ? (
+              isAuthenticated ? (
+                <Navigate to="/my-account" replace />
+              ) : (
+                <LoginPage />
+              )
+            ) : (
+              <Navigate to="/" replace />
+            )
           }
         />
 
         <Route
           path="/create-account"
           element={
-            isAuthenticated ? (
-              <Navigate to="/my-account" replace />
+            hasSupabaseCredentials ? (
+              isAuthenticated ? (
+                <Navigate to="/my-account" replace />
+              ) : (
+                <CreateAccountPage />
+              )
             ) : (
-              <CreateAccountPage />
+              <Navigate to="/" replace />
             )
           }
         />
@@ -92,10 +129,14 @@ export default function App() {
         <Route
           path="/my-account"
           element={
-            isAuthenticated ? (
-              <MyAccountPage onLogout={handleLogout} session={session} />
+            hasSupabaseCredentials ? (
+              isAuthenticated ? (
+                <MyAccountPage onLogout={handleLogout} session={session} />
+              ) : (
+                <Navigate to="/login" replace />
+              )
             ) : (
-              <Navigate to="/login" replace />
+              <Navigate to="/" replace />
             )
           }
         />
