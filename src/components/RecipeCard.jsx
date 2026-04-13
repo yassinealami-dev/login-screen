@@ -1,4 +1,5 @@
 import React from "react";
+import { resolveImageUrl } from "../lib/resolveImageUrl";
 
 export default function RecipeCard({ recipe }) {
   const time = recipe.time || "Nog niet ingevuld";
@@ -9,10 +10,13 @@ export default function RecipeCard({ recipe }) {
     <article className="recipe-card">
       <div className="recipe-card__imageWrap">
         <img
-          src={recipe.image}
+          src={resolveImageUrl(recipe.image)}
           alt={recipe.title}
           className="recipe-card__image"
           loading="lazy"
+          onError={(event) => {
+            event.currentTarget.src = `${import.meta.env.BASE_URL}img/placeholder.jpg`;
+          }}
         />
         <span className="recipe-card__badge">{category}</span>
       </div>

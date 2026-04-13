@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { resolveImageUrl } from "../lib/resolveImageUrl";
 
 export default function PopularSlider({ slides }) {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -39,9 +40,12 @@ export default function PopularSlider({ slides }) {
           {slides.map((slide) => (
             <div className="popular-slide" key={slide.id}>
               <img
-                src={slide.image}
+                src={resolveImageUrl(slide.image)}
                 alt={slide.title}
                 className="popular-slide__image"
+                onError={(event) => {
+                  event.currentTarget.src = `${import.meta.env.BASE_URL}img/placeholder.jpg`;
+                }}
               />
 
               <div className="popular-slide__overlay">

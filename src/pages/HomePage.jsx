@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { supabase } from "../lib/supabaseClient.js";
+import { resolveImageUrl } from "../lib/resolveImageUrl";
 import PopularSlider from "../components/PopularSlider.jsx";
 import RecipeCard from "../components/RecipeCard.jsx";
 
@@ -18,8 +19,24 @@ export default function HomePage({ isAuthenticated }) {
   const [pageError, setPageError] = useState("");
   const [activeCategory, setActiveCategory] = useState("all");
 
+  const scrollToSection = (sectionId) => {
+    const section = document.getElementById(sectionId);
+
+    if (section) {
+      section.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  };
+
   useEffect(() => {
     const loadHomeData = async () => {
+      if (!supabase) {
+        setPageError(
+          "Supabase is momenteel niet beschikbaar op deze live versie."
+        );
+        setLoadingPage(false);
+        return;
+      }
+
       try {
         setLoadingPage(true);
         setPageError("");
@@ -115,13 +132,21 @@ export default function HomePage({ isAuthenticated }) {
           </p>
 
           <div className="hero-home__actions">
-            <a href="#recipes" className="button button--primary">
+            <button
+              type="button"
+              className="button button--primary"
+              onClick={() => scrollToSection("recipes")}
+            >
               Bekijk recepten
-            </a>
+            </button>
 
-            <a href="#categories" className="button button--ghost">
+            <button
+              type="button"
+              className="button button--ghost"
+              onClick={() => scrollToSection("categories")}
+            >
               Ontdek categorieën
-            </a>
+            </button>
 
             <Link
               to={isAuthenticated ? "/my-account" : "/create-account"}
@@ -170,9 +195,7 @@ export default function HomePage({ isAuthenticated }) {
         <div className="section-heading">
           <span className="section-heading__eyebrow">Structuur & overzicht</span>
           <h2>Huiselijke categorieën</h2>
-          <p>
-            Navigeer door de cards om direct te filteren.
-          </p>
+          <p>Navigeer door de cards om direct te filteren.</p>
         </div>
 
         {loadingPage ? (
@@ -207,15 +230,18 @@ export default function HomePage({ isAuthenticated }) {
                   }`}
                   onClick={() => {
                     setActiveCategory(categorySlug);
-                    window.location.hash = "recipes";
+                    scrollToSection("recipes");
                   }}
                 >
                   <div className="category-card__imageWrap">
                     <img
-                      src={category.image}
+                      src={resolveImageUrl(category.image)}
                       alt={category.title}
                       className="category-card__image"
                       loading="lazy"
+                      onError={(event) => {
+                        event.currentTarget.src = `${import.meta.env.BASE_URL}img/placeholder.jpg`;
+                      }}
                     />
                   </div>
 
