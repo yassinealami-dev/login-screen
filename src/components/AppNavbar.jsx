@@ -1,10 +1,34 @@
 import React, { useState } from "react";
-import { Link, NavLink } from "react-router-dom";
+import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
 
 export default function AppNavbar({ isAuthenticated, onLogout }) {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const navigate = useNavigate();
+  const location = useLocation();
 
   const closeMenu = () => setMobileOpen(false);
+
+  const goToSection = (sectionId) => {
+    closeMenu();
+
+    if (location.pathname !== "/") {
+      navigate("/");
+
+      window.setTimeout(() => {
+        const section = document.getElementById(sectionId);
+        if (section) {
+          section.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+      }, 200);
+
+      return;
+    }
+
+    const section = document.getElementById(sectionId);
+    if (section) {
+      section.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  };
 
   return (
     <header className="site-header">
@@ -34,22 +58,43 @@ export default function AppNavbar({ isAuthenticated, onLogout }) {
             Home
           </NavLink>
 
-          <a href="/#categories" className="site-nav__link" onClick={closeMenu}>
+          <button
+            type="button"
+            className="site-nav__link site-nav__button"
+            onClick={() => goToSection("categories")}
+          >
             Categorieën
-          </a>
+          </button>
 
-          <a href="/#recipes" className="site-nav__link" onClick={closeMenu}>
+          <button
+            type="button"
+            className="site-nav__link site-nav__button"
+            onClick={() => goToSection("recipes")}
+          >
             Recepten
-          </a>
+          </button>
 
           {isAuthenticated ? (
-            <NavLink
-              to="/my-account"
-              className="site-nav__link"
-              onClick={closeMenu}
-            >
-              Mijn account
-            </NavLink>
+            <>
+              <NavLink
+                to="/my-account"
+                className="site-nav__link"
+                onClick={closeMenu}
+              >
+                Mijn account
+              </NavLink>
+
+              <button
+                type="button"
+                className="button button--ghost button--sm"
+                onClick={() => {
+                  closeMenu();
+                  onLogout();
+                }}
+              >
+                Uitloggen
+              </button>
+            </>
           ) : (
             <>
               <NavLink
@@ -69,19 +114,6 @@ export default function AppNavbar({ isAuthenticated, onLogout }) {
               </NavLink>
             </>
           )}
-
-          {isAuthenticated ? (
-            <button
-              type="button"
-              className="button button--ghost button--sm"
-              onClick={() => {
-                closeMenu();
-                onLogout();
-              }}
-            >
-              Uitloggen
-            </button>
-          ) : null}
         </nav>
       </div>
     </header>
